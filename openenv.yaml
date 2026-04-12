@@ -16,6 +16,16 @@ scenarios:
   - easy
   - medium
   - hard
+tasks:
+  - id: count_merchants
+    description: "How many merchants are registered in total?"
+    difficulty: easy
+  - id: count_failed_transactions
+    description: "How many transactions have status 'failed'?"
+    difficulty: medium
+  - id: resolve_oldest_open_dispute
+    description: "Find the first open dispute and resolve it. Return the dispute ID you resolved."
+    difficulty: hard
 tags:
   - api
   - tool-use

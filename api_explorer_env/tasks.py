@@ -174,20 +174,20 @@ def get_tasks(scenario: str, db: dict) -> list[Task]:
 
     if scenario == "easy":
         return [
-            CountMerchantsTask(),
-            FindMerchantStatusTask(mid),
-            TotalVolumeAllTask(),
+            CountMerchantsTask(),           # easy
+            FindMerchantStatusTask(mid),    # easy
+            TotalVolumeAllTask(),           # easy
         ]
     elif scenario == "medium":
-        mid2 = random.choice(merchants)["id"]
+        # One task per difficulty level so validators see easy/medium/hard coverage
         return [
-            CountMerchantsTask(),
-            CountFailedTransactionsTask(),
-            TotalVolumeForMerchantTask(mid2),
+            CountMerchantsTask(),           # easy
+            CountFailedTransactionsTask(),  # medium
+            ResolveOldestDisputeTask(),     # hard
         ]
     else:  # hard
         return [
-            CountFailedTransactionsTask(),
-            FindHighestBalanceMerchantTask(),
-            ResolveOldestDisputeTask(),
+            TotalVolumeForMerchantTask(mid),    # medium
+            FindHighestBalanceMerchantTask(),    # hard
+            ResolveOldestDisputeTask(),          # hard
         ]
