@@ -17,9 +17,12 @@ dependencies = [
     "fastapi>=0.110.0",
 ]
 
+[project.scripts]
+server = "server.app:app"
+
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["api_explorer_env*"]
+include = ["api_explorer_env*", "server*"]
 
 [project.entry-points."openenv.envs"]
 APIExplorer-v0 = "api_explorer_env.openenv_env:APIExplorerOpenEnv"
