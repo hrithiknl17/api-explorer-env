@@ -1,0 +1,24 @@
+id: APIExplorer-v0
+name: API Explorer — Undocumented API Navigator
+version: "0.1.0"
+description: >
+  An LLM agent must explore an undocumented REST API, infer its structure,
+  and complete real-world tasks (fetch records, update state, paginate results)
+  using the minimum number of API calls. Tests reasoning, not optimization.
+authors:
+  - name: Hrithik
+    github: "https://github.com/hrithiknl17"
+license: mit
+action: APIAction
+observation: APIObservation
+entry_point: api_explorer_env.openenv_env:APIExplorerOpenEnv
+scenarios:
+  - easy
+  - medium
+  - hard
+tags:
+  - api
+  - tool-use
+  - reasoning
+  - openenv
+  - llm-native
