@@ -14,6 +14,7 @@ from api_explorer_env.openenv_models import APIAction, APIObservation
 API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/together/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "meta-llama/Llama-3.3-70B-Instruct")
 HF_TOKEN = os.getenv("HF_TOKEN")
+LOCAL_IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME")
 
 SYSTEM_PROMPT = """You are an API explorer agent. You are given access to an undocumented REST API.
 Your job is to complete tasks by calling API endpoints and reasoning about responses.
@@ -79,8 +80,7 @@ def query_model(client: OpenAI, obs: APIObservation, history: list[dict]) -> API
 
 
 def run_episode(scenario: str, seed: int, max_steps: int) -> dict[str, Any]:
-    api_key = HF_TOKEN or "local"
-    client = OpenAI(base_url=API_BASE_URL, api_key=api_key)
+    client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
     env = APIExplorerOpenEnv(scenario=scenario, seed=seed)
 
     obs = env.reset(seed=seed, scenario=scenario)

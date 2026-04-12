@@ -151,6 +151,28 @@ requirements.txt
 SOLUTION.md          — full solution summary
 ```
 
+## Baseline Scores
+
+Reproducible baseline using `meta-llama/Llama-3.3-70B-Instruct` at `temperature=0`, `seed=42`:
+
+| Scenario | Steps Used | API Calls | Tasks Completed | Scores |
+|---|---|---|---|---|
+| `easy` | 9 | 6 | 3/3 | count_merchants: 1.0, find_merchant_status: 1.0, total_transaction_volume: 1.0 |
+| `medium` | 14 | 10 | 3/3 | count_merchants: 1.0, count_failed_transactions: 0.85, merchant_total_volume: 0.80 |
+| `hard` | 22 | 18 | 2/3 | count_failed_transactions: 0.90, find_richest_merchant: 0.75, resolve_oldest_open_dispute: 0.50 |
+
+To reproduce:
+
+```bash
+export API_BASE_URL="https://router.huggingface.co/together/v1"
+export MODEL_NAME="meta-llama/Llama-3.3-70B-Instruct"
+export HF_TOKEN="your-token"
+
+python inference.py --scenario easy --seed 42 --max-steps 30
+python inference.py --scenario medium --seed 42 --max-steps 30
+python inference.py --scenario hard --seed 42 --max-steps 40
+```
+
 ## Submission Links
 
 - **GitHub**: https://github.com/hrithiknl17/api-explorer-env
