@@ -29,7 +29,7 @@ class Task:
 class CountMerchantsTask(Task):
     def __init__(self):
         super().__init__(
-            "count_merchants",
+            "easy_count_merchants",
             "How many merchants are registered in total?",
             "easy",
         )
@@ -65,7 +65,7 @@ class FindMerchantStatusTask(Task):
 class CountFailedTransactionsTask(Task):
     def __init__(self):
         super().__init__(
-            "count_failed_transactions",
+            "medium_count_failed_transactions",
             "How many transactions have status 'failed'?",
             "medium",
         )
@@ -129,7 +129,7 @@ class TotalVolumeAllTask(Task):
 class ResolveOldestDisputeTask(Task):
     def __init__(self):
         super().__init__(
-            "resolve_oldest_open_dispute",
+            "hard_resolve_oldest_dispute",
             "Find the first open dispute and resolve it. Return the dispute ID you resolved.",
             "hard",
         )
@@ -168,26 +168,10 @@ class FindHighestBalanceMerchantTask(Task):
 # ── Task sets per scenario ─────────────────────────────────────────────────────
 
 def get_tasks(scenario: str, db: dict) -> list[Task]:
-    import random
-    merchants = db["merchants"]
-    mid = random.choice(merchants)["id"]
-
-    if scenario == "easy":
-        return [
-            CountMerchantsTask(),           # easy
-            FindMerchantStatusTask(mid),    # easy
-            TotalVolumeAllTask(),           # easy
-        ]
-    elif scenario == "medium":
-        # One task per difficulty level so validators see easy/medium/hard coverage
-        return [
-            CountMerchantsTask(),           # easy
-            CountFailedTransactionsTask(),  # medium
-            ResolveOldestDisputeTask(),     # hard
-        ]
-    else:  # hard
-        return [
-            TotalVolumeForMerchantTask(mid),    # medium
-            FindHighestBalanceMerchantTask(),    # hard
-            ResolveOldestDisputeTask(),          # hard
-        ]
+    # All scenarios use the same 3 canonical graders (easy / medium / hard).
+    # The scenario only affects the API call limit in the environment.
+    return [
+        CountMerchantsTask(),           # easy_count_merchants
+        CountFailedTransactionsTask(),  # medium_count_failed_transactions
+        ResolveOldestDisputeTask(),     # hard_resolve_oldest_dispute
+    ]

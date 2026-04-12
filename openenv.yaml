@@ -17,15 +17,18 @@ scenarios:
   - medium
   - hard
 tasks:
-  - id: count_merchants
+  - name: easy_count_merchants
     description: "How many merchants are registered in total?"
     difficulty: easy
-  - id: count_failed_transactions
+    grader: api_explorer_env.tasks:CountMerchantsTask
+  - name: medium_count_failed_transactions
     description: "How many transactions have status 'failed'?"
     difficulty: medium
-  - id: resolve_oldest_open_dispute
+    grader: api_explorer_env.tasks:CountFailedTransactionsTask
+  - name: hard_resolve_oldest_dispute
     description: "Find the first open dispute and resolve it. Return the dispute ID you resolved."
     difficulty: hard
+    grader: api_explorer_env.tasks:ResolveOldestDisputeTask
 tags:
   - api
   - tool-use
