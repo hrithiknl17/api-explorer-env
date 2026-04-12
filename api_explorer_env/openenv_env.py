@@ -5,6 +5,7 @@ from typing import Optional
 
 from openenv.core.env_server import Environment
 from openenv.core.env_server.types import EnvironmentMetadata
+from openenv.core.rubrics.base import Rubric
 
 from .mock_api import MockAPI
 from .openenv_models import APIAction, APIObservation, APIState, TaskStatus
@@ -18,11 +19,51 @@ SCENARIO_CALL_LIMITS = {
 }
 
 
+# ── Per-task grader ─────────────────────────────────────────────────────────────
+
+class TaskRubric(Rubric):
+    """Scores a single named task from the observation's task_scores dict."""
+
+    def __init__(self, task_name: str):
+        super().__init__()
+        self._task_name = task_name
+
+    def forward(self, action: APIAction, observation: APIObservation) -> float:
+        return float(observation.task_scores.get(self._task_name, 0.0))
+
+    def reset(self) -> None:
+        self.last_score = None
+
+
+# ── Composite rubric for the full episode ───────────────────────────────────────
+
+class APIExplorerRubric(Rubric):
+    """Holds one TaskRubric per task; mean score across all tasks."""
+
+    def __init__(self, tasks: list) -> None:
+        super().__init__()
+        for task in tasks:
+            # Assigning a Rubric as an attribute auto-registers it as a child
+            setattr(self, task.name, TaskRubric(task.name))
+
+    def forward(self, action: APIAction, observation: APIObservation) -> float:
+        children = list(self._rubric_children.values())
+        if not children:
+            return 0.0
+        scores = [child.forward(action, observation) for child in children]
+        return sum(scores) / len(scores)
+
+    def reset(self) -> None:
+        for child in self._rubric_children.values():
+            child.reset()
+
+
+# ── Environment ─────────────────────────────────────────────────────────────────
+
 class APIExplorerOpenEnv(Environment[APIAction, APIObservation, APIState]):
     SUPPORTS_CONCURRENT_SESSIONS = True
 
     def __init__(self, scenario: str = "medium", seed: int = 42):
-        super().__init__()
         self._scenario = scenario
         self._seed = seed
         self._api = MockAPI(seed=seed)
@@ -33,6 +74,7 @@ class APIExplorerOpenEnv(Environment[APIAction, APIObservation, APIState]):
             scenario=scenario,
             tasks_total=len(self._tasks),
         )
+        super().__init__(rubric=APIExplorerRubric(self._tasks))
 
     @property
     def state(self) -> APIState:
@@ -55,7 +97,6 @@ class APIExplorerOpenEnv(Environment[APIAction, APIObservation, APIState]):
         scenario: Optional[str] = None,
         **kwargs,
     ) -> APIObservation:
-        self._reset_rubric()
         effective_scenario = scenario or self._scenario
         effective_seed = seed if seed is not None else self._seed
 
@@ -64,6 +105,10 @@ class APIExplorerOpenEnv(Environment[APIAction, APIObservation, APIState]):
         self._tasks = get_tasks(effective_scenario, self._api.db)
         self._task_idx = 0
         self._call_limit = SCENARIO_CALL_LIMITS.get(effective_scenario, 25)
+
+        # Rebuild rubric for the new scenario's tasks
+        self.rubric = APIExplorerRubric(self._tasks)
+        self._reset_rubric()
 
         self._state = APIState(
             episode_id=episode_id or str(uuid.uuid4()),
@@ -126,7 +171,6 @@ class APIExplorerOpenEnv(Environment[APIAction, APIObservation, APIState]):
 
         # ── Handle API call ───────────────────────────────────────────────────
         if self._api.total_calls >= self._call_limit:
-            done = True
             return self._build_observation(
                 status_code=429,
                 response_body={"error": "API call limit reached", "limit": self._call_limit},
@@ -143,7 +187,6 @@ class APIExplorerOpenEnv(Environment[APIAction, APIObservation, APIState]):
         )
         self._state.api_calls_used = self._api.total_calls
 
-        # Small penalty for 404s (exploring wrong paths)
         if status_code == 404:
             reward -= 0.02
 
@@ -198,7 +241,4 @@ class APIExplorerOpenEnv(Environment[APIAction, APIObservation, APIState]):
         return self._apply_transform(obs)
 
     def _compute_task_scores(self) -> dict[str, float]:
-        scores = {}
-        for task in self._tasks:
-            scores[task.name] = round(task.score, 4)
-        return scores
+        return {task.name: round(task.score, 4) for task in self._tasks}
