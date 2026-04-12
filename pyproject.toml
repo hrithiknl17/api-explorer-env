@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "api-explorer-env"
+version = "0.1.0"
+description = "An LLM agent explores an undocumented REST API and completes tasks by reasoning about responses."
+authors = [
+    {name = "Hrithik", email = ""}
+]
+requires-python = ">=3.10"
+dependencies = [
+    "openenv-core>=0.2.3",
+    "openai>=1.0.0",
+    "uvicorn>=0.29.0",
+    "fastapi>=0.110.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["api_explorer_env*"]
+
+[project.entry-points."openenv.envs"]
+APIExplorer-v0 = "api_explorer_env.openenv_env:APIExplorerOpenEnv"
