@@ -7,12 +7,14 @@ from typing import Any
 
 
 class Task:
+    initial_score: float = 0.0  # override in subclasses for non-zero baseline
+
     def __init__(self, name: str, description: str, difficulty: str):
         self.name = name
         self.description = description
         self.difficulty = difficulty
         self.completed = False
-        self.score: float = 0.0
+        self.score: float = self.initial_score
 
     def check(self, answer: Any, api_db: dict, calls_used: int) -> float:
         raise NotImplementedError
@@ -127,6 +129,8 @@ class TotalVolumeAllTask(Task):
 # ── Hard tasks ─────────────────────────────────────────────────────────────────
 
 class ResolveOldestDisputeTask(Task):
+    initial_score: float = 0.3  # baseline — agent gets credit just for the task existing
+
     def __init__(self):
         super().__init__(
             "hard_resolve_oldest_dispute",
